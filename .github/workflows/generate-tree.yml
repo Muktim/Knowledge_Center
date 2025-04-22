@@ -1,4 +1,4 @@
-name: Generate Folder Tree
+name: Update Folder Tree
 
 on:
   push:
@@ -7,7 +7,7 @@ permissions:
   contents: write
 
 jobs:
-  update-tree:
+  update-readme:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,17 +21,16 @@ jobs:
       - name: Install tree-extended
         run: npm install -g tree-extended
 
-      - name: Generate folder structure
+      - name: Generate tree and update README
         run: |
-          echo '## 📁 Folder Structure' > README.md
-          echo '```' >> README.md
-          tree-extended -max=2 -charset=utf8-icons >> README.md
-          echo '```' >> README.md
+          # generate tree into a temp file
+          echo '```' > tree.txt
+          tree-extended -max=2 -charset=utf8-icons >> tree.txt
+          echo '```' >> tree.txt
 
-      - name: Commit and push
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add README.md || true
-          git commit -m "Update folder structure" || true
-          git push
+          # use sed to replace section between <!-- tree-start --> and <!-- tree-end -->
+          awk '
+            BEGIN {in_block=0}
+            /<!-- tree-start -->/ { print; system("cat tree.txt"); in_block=1; next }
+            /<!-- tree-end -->/ { in_block=0 }
+            !in_block
