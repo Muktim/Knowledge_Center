@@ -3,6 +3,8 @@ name: Generate Folder Tree
 on:
   push:
     branches: [main]
+permissions:
+  contents: write
 
 jobs:
   update-tree:
@@ -10,6 +12,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
 
       - name: Install tree-extended
         run: npm install -g tree-extended
@@ -25,6 +32,6 @@ jobs:
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add README.md
-          git commit -m "Update folder structure"
+          git add README.md || true
+          git commit -m "Update folder structure" || true
           git push
