@@ -1,0 +1,30 @@
+name: Generate Folder Tree
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  update-tree:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install tree-extended
+        run: npm install -g tree-extended
+
+      - name: Generate folder structure
+        run: |
+          echo '## 📁 Folder Structure' > README.md
+          echo '```' >> README.md
+          tree-extended -max=2 -charset=utf8-icons >> README.md
+          echo '```' >> README.md
+
+      - name: Commit and push
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add README.md
+          git commit -m "Update folder structure"
+          git push
