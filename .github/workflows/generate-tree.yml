@@ -1,34 +1,28 @@
-name: Update Tree Section in README
+name: Generate Tree
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  update-readme-tree:
+  update-readme:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Install tree-extended
+      - name: Generate tree into temp file
         run: |
-          npm install -g tree-extended
+          tree -L 2 -I ".git|.github|node_modules" --noreport > tree.txt
 
-      - name: Generate and filter tree
+      - name: Update README.md
         run: |
-          tree-extended -max=2 -charset=utf8-icons | grep -vE '\.git/?|\.github/?' > tree.txt
+          sed -i '/<!--tree-start-->/, /<!--tree-end-->/c\<!--tree-start-->\n```text\n$(cat tree.txt)\n```\n<!--tree-end-->' README.md
 
-      - name: Replace section in README
-        run: |
-          awk '/<!-- tree-start -->/ { print; system("cat tree.txt"); skip=1; next }
-               /<!-- tree-end -->/ { skip=0 }
-               !skip' README.md > new_README.md
-          mv new_README.md README.md
-
-       - name: Commit and push if changed
+      - name: Commit and push changes
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
@@ -36,5 +30,5 @@ jobs:
           git config --global user.email 'bot@example.com'
           git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}
           git add README.md
-          git diff --cached --quiet || git commit -m "Update project tree section in README"
+          git diff --cached --quiet || git commit -m "Update project tree"
           git push origin HEAD:${{ github.ref_name }}
