@@ -28,10 +28,13 @@ jobs:
                !skip' README.md > new_README.md
           mv new_README.md README.md
 
-      - name: Commit and push if changed
+       - name: Commit and push if changed
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git config --global user.name 'AutoUpdater Bot'
+          git config --global user.email 'bot@example.com'
+          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}
           git add README.md
           git diff --cached --quiet || git commit -m "Update project tree section in README"
-          git push
+          git push origin HEAD:${{ github.ref_name }}
