@@ -1,47 +1,37 @@
-name: Update Folder Tree
+name: Update Tree Section in README
 
 on:
   push:
     branches: [main]
-
-permissions:
-  contents: write
+  workflow_dispatch:
 
 jobs:
-  update-readme:
+  update-readme-tree:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
       - name: Install tree-extended
-        run: npm install -g tree-extended
-
-      - name: Generate tree and update README
         run: |
-          echo '```' > tree.txt
-          tree-extended -max=2 -charset=utf8-icons | grep -vE '\.git/?|\.github/?' > output.txt
+          npm install -g tree-extended
 
-          echo '```' >> tree.txt
-
-          awk '
-            BEGIN {in_block=0}
-            /<!-- tree-start -->/ { print; system("cat tree.txt"); in_block=1; next }
-            /<!-- tree-end -->/ { in_block=0 }
-            !in_block
-          ' README.md > new_readme.md
-
-          mv new_readme.md README.md
-
-      - name: Commit and push changes
+      - name: Generate and filter tree
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          tree-extended -max=2 -charset=utf8-icons | grep -vE '\.git/?|\.github/?' > tree.txt
+
+      - name: Replace section in README
+        run: |
+          awk '/<!-- tree-start -->/ { print; system("cat tree.txt"); skip=1; next }
+               /<!-- tree-end -->/ { skip=0 }
+               !skip' README.md > new_README.md
+          mv new_README.md README.md
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add README.md
-          git diff --quiet && git diff --staged --quiet || git commit -m "Update folder structure"
+          git diff --cached --quiet || git commit -m "Update project tree section in README"
           git push
