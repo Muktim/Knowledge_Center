@@ -25,7 +25,7 @@ jobs:
       - name: Generate tree and update README
         run: |
           echo '```' > tree.txt
-          tree-extended -max=2 --ignore=".git,.github" -charset=utf8-icons >> tree.txt
+          tree-extended -max=2 -charset=utf8-icons | grep -vE '\.git/?|\.github/?' > output.txt
 
           echo '```' >> tree.txt
 
