@@ -9,3 +9,4 @@ Note! I am a university student, thus, I might have access to some academic pape
 
 This repository covers the following,
 
+<pre> tree-extended -max=2 -charset=utf8-icons
