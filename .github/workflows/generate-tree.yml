@@ -25,7 +25,7 @@ jobs:
       - name: Generate tree and update README
         run: |
           echo '```' > tree.txt
-          tree-extended -max=2 --ignore node_modules,.git,Images -charset=utf8-icons >> tree.txt
+          tree-extended -max=2 --ignore=".git,.github" -charset=utf8-icons >> tree.txt
 
           echo '```' >> tree.txt
 
